@@ -1,0 +1,462 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>MonteCarlo</title>
+<meta name="generator" content="MATLAB 24.1">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2024-09-12">
+<meta name="DC.source" content="MonteCarlo.m">
+<style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="content">
+<h2>Contents</h2>
+<div>
+<ul>
+<li>
+<a href="#1">Section 1: for loop</a>
+</li>
+<li>
+<a href="#2">Section 2: while loop of specified precision</a>
+</li>
+<li>
+<a href="#3">Functions</a>
+</li>
+</ul>
+</div>
+<h2 id="1">Section 1: for loop</h2>
+<pre class="codeinput">clear;
+
+NEXP = 6;
+piVal = 0;
+
+times = [0];
+piValues = [4 4];
+sampleSize = [1 2];
+deviations = [0];
+
+<span class="comment">% conduct a trial for every power of 10 to NEXP</span>
+<span class="keyword">for</span> exp = 1:NEXP
+    <span class="comment">% set numpoints</span>
+    piTotal = 0;
+    numPoints = 10^exp;
+    numPointsInCircle = 0;
+
+    <span class="comment">% start a timer to see how long the loop takes</span>
+    loopStart = tic;
+
+    <span class="keyword">for</span> i = 0:numPoints
+        <span class="keyword">if</span> generatePointAndCount()
+            <span class="comment">% calculate the fraction of points within the circle out of all points generated</span>
+            proportion = numPointsInCircle/numPoints;
+            numPointsInCircle = numPointsInCircle + 1;
+            <span class="comment">% calculate pi assuming that the proportion is roughly equal to pi/4</span>
+            piVal = proportion * 4;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    avgPiVal = 2*piTotal/numPointsInCircle;
+
+    <span class="comment">% print result to console</span>
+    fprintf(<span class="string">'monte carlo pi value for %d points: %f \n'</span>, numPoints, piVal);
+
+    <span class="comment">%end timer for loop</span>
+    loopTime = toc(loopStart);
+
+    <span class="comment">% store time, generated value, sample size, and deviation in respective</span>
+    <span class="comment">% arrays</span>
+    times(exp) = loopTime;
+    piValues(exp) = piVal;
+    sampleSize(exp) = numPoints;
+    deviations(exp) = abs(pi() - piVal);
+
+<span class="keyword">end</span>
+
+<span class="comment">% combine all data arrays into summary table</span>
+summaryTable = table(transpose(sampleSize), transpose(piValues), transpose(deviations), transpose(times), <span class="string">'VariableNames'</span>, [<span class="string">"Sample Size"</span>, <span class="string">"Pi Values Calculated"</span>, <span class="string">"Deviation From True Value"</span>, <span class="string">"Time for Calculation"</span>]);
+summaryTable
+
+<span class="comment">% plot figures showing requested statistics</span>
+tiledlayout(1,2);
+nexttile;
+semilogx(sampleSize, piValues, <span class="string">'b-o'</span>);
+title(<span class="string">'Pi Value vs Sample Size'</span>);
+xlabel(<span class="string">'log(Sample Size)'</span>);
+ylabel(<span class="string">'Pi Value'</span>);
+
+nexttile;
+semilogx(sampleSize, deviations, <span class="string">'r-o'</span>);
+title(<span class="string">'Deviation From True Value vs Sample Size'</span>)
+xlabel(<span class="string">'log(Sample Size)'</span>);
+ylabel(<span class="string">'Deviation'</span>);
+</pre>
+<pre class="codeoutput">monte carlo pi value for 10 points: 2.400000 
+monte carlo pi value for 100 points: 3.240000 
+monte carlo pi value for 1000 points: 3.112000 
+monte carlo pi value for 10000 points: 3.126400 
+monte carlo pi value for 100000 points: 3.145680 
+monte carlo pi value for 1000000 points: 3.141828 
+
+summaryTable =
+
+  6&times;4 table
+
+    Sample Size    Pi Values Calculated    Deviation From True Value    Time for Calculation
+    ___________    ____________________    _________________________    ____________________
+
+          10                 2.4                     0.74159                  0.001711      
+         100                3.24                    0.098407                 0.0001355      
+        1000               3.112                    0.029593                 0.0005297      
+       10000              3.1264                    0.015193                 0.0041918      
+       1e+05              3.1457                   0.0040873                  0.037466      
+       1e+06              3.1418                  0.00023535                    0.3461      
+
+</pre>
+<img vspace="5" hspace="5" src="MonteCarlo_01.png" alt=""> <h2 id="2">Section 2: while loop of specified precision</h2>
+<pre class="codeinput">theta = linspace(0, 2*pi(), 256);
+circleX = cos(theta)+1;
+circleY = sin(theta)+1;
+generatedPoints=[rand(2,1)];
+pointsInCircle = [[1;1]];
+pointsOutsideCircle = [[0;0]];
+piValues = [4];
+piVal = 0;
+
+SIG_FIGS = 4;
+
+<span class="keyword">for</span> sigFigs = 1:SIG_FIGS
+
+    <span class="comment">% While the calculated value does not have the desired number of correct</span>
+    <span class="comment">% sig figs, continuously generate new points, append to original array,</span>
+    <span class="comment">% plot, and recalculate the value. Break when the value is correct or the</span>
+    <span class="comment">% set maximum number of tries is reached.</span>
+    <span class="keyword">while</span> ~meetsSigFigs(sigFigs, piValues)
+        generatedPoints = cat(2, generatedPoints, 2*rand(2,1));
+        [piVal, pointsInCircle, pointsOutsideCircle]  = getPiValFromCoords(generatedPoints, pointsInCircle, pointsOutsideCircle);
+        piValues(numel(piValues)+1) = piVal;
+        <span class="keyword">if</span> meetsSigFigs(sigFigs, piValues)
+            <span class="keyword">break</span>;
+        <span class="keyword">elseif</span> numel(generatedPoints(1,:)) &gt; 10^8
+            disp(<span class="string">'maximum tries expended'</span>)
+            <span class="keyword">break</span>;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    fprintf(<span class="string">'Pi value with %d significant figure(s): %f \n'</span>, sigFigs, piVal);
+    fprintf(<span class="string">'Number of points required for %d significant figure(s): %d \n'</span>, sigFigs, numel(generatedPoints(1,:)));
+<span class="keyword">end</span>
+</pre>
+<h2 id="3">Functions</h2>
+<pre class="codeinput">
+<span class="comment">% Check if the past 30 pi values have a consistent digit in the desired</span>
+<span class="comment">% significant figure place; if they do, the number is assumed to be</span>
+<span class="comment">% sufficiently precise</span>
+<span class="keyword">function</span> hasFigs = meetsSigFigs(sigfigs, valueArray)
+    hasFigs = false;
+    minVal = numel(valueArray) - 30;
+    difference = 10^(-sigfigs+1);
+    <span class="keyword">if</span> minVal &lt;= 0
+        <span class="keyword">return</span>
+    <span class="keyword">else</span>
+        <span class="keyword">for</span> val = (minVal+1):numel(valueArray)
+            <span class="keyword">if</span> abs(valueArray(minVal) - valueArray(val)) &gt; difference
+                hasFigs = false;
+                <span class="keyword">break</span>;
+            <span class="keyword">else</span>
+                hasFigs = true;
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Function that accepts an array of randomly generated coordinates</span>
+<span class="comment">% and provides a pi value based on the number that fall within</span>
+<span class="comment">% a circle, as well as two arrays of points inside and outside the circle</span>
+<span class="keyword">function</span> [valueToReturn, withinCircle, outsideCircle] = getPiValFromCoords(coordArray, currentInsideCircle, currentOutsideCircle)
+    intCount = 0.0;
+    <span class="keyword">for</span> coord = 1:numel(coordArray(1,:))
+        <span class="keyword">if</span> distanceToCenter([coordArray(1,coord),coordArray(2,coord)]) &lt;= 1
+            intCount = intCount + 1;
+            withinCircle = cat(2, currentInsideCircle, [coordArray(1,coord);coordArray(2,coord)]);
+            outsideCircle = currentOutsideCircle;
+        <span class="keyword">else</span>
+            outsideCircle = cat(2, currentOutsideCircle, [coordArray(1,coord);coordArray(2,coord)]);
+            withinCircle = currentInsideCircle;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    proportion = intCount/numel(coordArray(1,:));
+    valueToReturn = proportion*4;
+<span class="keyword">end</span>
+
+<span class="comment">% Generate a random coordinate and determine if it falls within</span>
+<span class="comment">% the inscribed circle via distance-to-center calculation; if it does, return</span>
+<span class="comment">% true, and otherwise return false</span>
+<span class="keyword">function</span> pointWithinCircle = generatePointAndCount()
+    point = rand(1,2,1);
+    <span class="keyword">if</span> distanceToCenter(point) &lt;= 1.0
+        pointWithinCircle = true;
+    <span class="keyword">else</span>
+        pointWithinCircle = false;
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+
+<span class="comment">% calculates distance between point argument (treated as [x;x])</span>
+<span class="comment">% and center of square, taken to be [0.5;0.5]</span>
+<span class="keyword">function</span> dist = distanceToCenter(point)
+    dist = sqrt((1-point(1))^2 + (1-point(2))^2);
+<span class="keyword">end</span>
+</pre>
+<pre class="codeoutput">Pi value with 1 significant figure(s): 3.225806 
+Number of points required for 1 significant figure(s): 31 
+Pi value with 2 significant figure(s): 3.179487 
+Number of points required for 2 significant figure(s): 78 
+Pi value with 3 significant figure(s): 3.130435 
+Number of points required for 3 significant figure(s): 345 
+Pi value with 4 significant figure(s): 3.158974 
+Number of points required for 4 significant figure(s): 3120 
+</pre>
+<p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024a</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+%% Section 1: for loop
+% 
+
+clear;
+
+NEXP = 6;
+piVal = 0;
+
+times = [0];
+piValues = [4 4];
+sampleSize = [1 2];
+deviations = [0];
+
+% conduct a trial for every power of 10 to NEXP
+for exp = 1:NEXP
+    % set numpoints
+    piTotal = 0;
+    numPoints = 10^exp;
+    numPointsInCircle = 0;
+
+    % start a timer to see how long the loop takes
+    loopStart = tic;
+    
+    for i = 0:numPoints
+        if generatePointAndCount()
+            % calculate the fraction of points within the circle out of all points generated    
+            proportion = numPointsInCircle/numPoints;
+            numPointsInCircle = numPointsInCircle + 1;
+            % calculate pi assuming that the proportion is roughly equal to pi/4    
+            piVal = proportion * 4;
+        end
+    end
+    
+    avgPiVal = 2*piTotal/numPointsInCircle;
+
+    % print result to console
+    fprintf('monte carlo pi value for %d points: %f \n', numPoints, piVal);
+        
+    %end timer for loop 
+    loopTime = toc(loopStart);
+
+    % store time, generated value, sample size, and deviation in respective
+    % arrays
+    times(exp) = loopTime;
+    piValues(exp) = piVal;
+    sampleSize(exp) = numPoints;
+    deviations(exp) = abs(pi() - piVal);
+
+end
+
+% combine all data arrays into summary table
+summaryTable = table(transpose(sampleSize), transpose(piValues), transpose(deviations), transpose(times), 'VariableNames', ["Sample Size", "Pi Values Calculated", "Deviation From True Value", "Time for Calculation"]);
+summaryTable
+
+% plot figures showing requested statistics
+tiledlayout(1,2);
+nexttile;
+semilogx(sampleSize, piValues, 'b-o');
+title('Pi Value vs Sample Size');
+xlabel('log(Sample Size)');
+ylabel('Pi Value');
+
+nexttile;
+semilogx(sampleSize, deviations, 'r-o');
+title('Deviation From True Value vs Sample Size')
+xlabel('log(Sample Size)');
+ylabel('Deviation');
+
+%% Section 2: while loop of specified precision
+%
+theta = linspace(0, 2*pi(), 256);
+circleX = cos(theta)+1;
+circleY = sin(theta)+1;
+generatedPoints=[rand(2,1)];
+pointsInCircle = [[1;1]];
+pointsOutsideCircle = [[0;0]];
+piValues = [4];
+piVal = 0;
+
+SIG_FIGS = 4;
+
+for sigFigs = 1:SIG_FIGS
+    
+    % While the calculated value does not have the desired number of correct
+    % sig figs, continuously generate new points, append to original array,
+    % plot, and recalculate the value. Break when the value is correct or the
+    % set maximum number of tries is reached.
+    while ~meetsSigFigs(sigFigs, piValues)
+        generatedPoints = cat(2, generatedPoints, 2*rand(2,1));
+        [piVal, pointsInCircle, pointsOutsideCircle]  = getPiValFromCoords(generatedPoints, pointsInCircle, pointsOutsideCircle);
+        piValues(numel(piValues)+1) = piVal;
+        if meetsSigFigs(sigFigs, piValues)
+            break;
+        elseif numel(generatedPoints(1,:)) > 10^8
+            disp('maximum tries expended')
+            break;
+        end
+    end
+    
+    fprintf('Pi value with %d significant figure(s): %f \n', sigFigs, piVal);
+    fprintf('Number of points required for %d significant figure(s): %d \n', sigFigs, numel(generatedPoints(1,:)));
+end
+
+
+%% Functions
+
+% Check if the past 30 pi values have a consistent digit in the desired
+% significant figure place; if they do, the number is assumed to be
+% sufficiently precise
+function hasFigs = meetsSigFigs(sigfigs, valueArray)
+    hasFigs = false;
+    minVal = numel(valueArray) - 30;
+    difference = 10^(-sigfigs+1);
+    if minVal <= 0
+        return
+    else
+        for val = (minVal+1):numel(valueArray)
+            if abs(valueArray(minVal) - valueArray(val)) > difference
+                hasFigs = false;
+                break;
+            else
+                hasFigs = true;
+            end
+        end
+    end
+end
+
+% Function that accepts an array of randomly generated coordinates
+% and provides a pi value based on the number that fall within
+% a circle, as well as two arrays of points inside and outside the circle
+function [valueToReturn, withinCircle, outsideCircle] = getPiValFromCoords(coordArray, currentInsideCircle, currentOutsideCircle)
+    intCount = 0.0;
+    for coord = 1:numel(coordArray(1,:))
+        if distanceToCenter([coordArray(1,coord),coordArray(2,coord)]) <= 1
+            intCount = intCount + 1;
+            withinCircle = cat(2, currentInsideCircle, [coordArray(1,coord);coordArray(2,coord)]);
+            outsideCircle = currentOutsideCircle;
+        else
+            outsideCircle = cat(2, currentOutsideCircle, [coordArray(1,coord);coordArray(2,coord)]);
+            withinCircle = currentInsideCircle;
+        end
+    end
+    proportion = intCount/numel(coordArray(1,:));
+    valueToReturn = proportion*4;
+end
+
+% Generate a random coordinate and determine if it falls within
+% the inscribed circle via distance-to-center calculation; if it does, return
+% true, and otherwise return false
+function pointWithinCircle = generatePointAndCount()
+    point = rand(1,2,1);
+    if distanceToCenter(point) <= 1.0
+        pointWithinCircle = true;
+    else
+        pointWithinCircle = false;
+    end
+    
+end
+
+
+% calculates distance between point argument (treated as [x;x]) 
+% and center of square, taken to be [0.5;0.5]
+function dist = distanceToCenter(point)
+    dist = sqrt((1-point(1))^2 + (1-point(2))^2);
+end
+##### SOURCE END #####
+-->
+</body>
+</html>

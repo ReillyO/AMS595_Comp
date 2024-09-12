@@ -11,8 +11,6 @@ piValues = [4 4];
 sampleSize = [1 2];
 deviations = [0];
 
-fprintf('===============================\nUsing for loop for generation\n===============================\n');
-
 % conduct a trial for every power of 10 to NEXP
 for exp = 1:NEXP
     % set numpoints
@@ -52,7 +50,7 @@ end
 
 % combine all data arrays into summary table
 summaryTable = table(transpose(sampleSize), transpose(piValues), transpose(deviations), transpose(times), 'VariableNames', ["Sample Size", "Pi Values Calculated", "Deviation From True Value", "Time for Calculation"]);
-disp(summaryTable);
+summaryTable
 
 % plot figures showing requested statistics
 tiledlayout(1,2);
@@ -63,14 +61,13 @@ xlabel('log(Sample Size)');
 ylabel('Pi Value');
 
 nexttile;
-semilogx(sampleSize, deviations, 'r-o');
 title('Deviation From True Value vs Sample Size')
+semilogx(sampleSize, deviations, 'r-o');
 xlabel('log(Sample Size)');
 ylabel('Deviation');
 
 %% Section 2: while loop of specified precision
 %
-fprintf('===============================\nUsing while loop for generation\n===============================\n');
 theta = linspace(0, 2*pi(), 256);
 circleX = cos(theta)+1;
 circleY = sin(theta)+1;
@@ -147,9 +144,9 @@ function [valueToReturn, withinCircle, outsideCircle] = getPiValFromCoords(coord
     valueToReturn = proportion*4;
 end
 
-% Generate a random coordinate and determine if it falls within
-% the inscribed circle via distance-to-center calculation; if it does, return
-% true, and otherwise return false
+% Gener and determine if they fall within
+% the inscribed circle via distance-to-center calculation
+% if a point does fall within the circle, increment the counter
 function pointWithinCircle = generatePointAndCount()
     point = rand(1,2,1);
     if distanceToCenter(point) <= 1.0
