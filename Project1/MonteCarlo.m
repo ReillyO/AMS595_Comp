@@ -3,7 +3,7 @@
 
 clear;
 
-NEXP = 6;
+NEXP = 8;
 piVal = 0;
 
 times = [0];
