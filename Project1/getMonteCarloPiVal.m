@@ -2,6 +2,9 @@
 %
 
 function monteCarloValue = getMonteCarloPiVal(desiredSigFigs)
+    % Validate that input is a single integer
+    validateattributes(desiredSigFigs, {'double'}, {'scalar', 'integer', 'nonzero', 'positive'});
+
     % Create parameter arrays for a circle to draw on graph
     theta = linspace(0, 2*pi(), 256);
     circleX = cos(theta)+1;
