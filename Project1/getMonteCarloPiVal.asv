@@ -10,7 +10,7 @@ function monteCarloValue = getMonteCarloPiVal(desiredSigFigs)
     % Initialize point and value arrays for Monte Carlo calculations
     generatedPoints=[rand(2,1)];
     insideCircle = [[0.5;0.5]];
-    outsideCircle = [[1;1]];
+    outsideCircle = [[1,1]];
     piValues = [4];
     piVal = 0;
     
@@ -45,11 +45,12 @@ function monteCarloValue = getMonteCarloPiVal(desiredSigFigs)
         end
         
         delete(findall(gcf, 'type', 'annotation'));
+        
         if distanceToCenter(newestPoint) <= 1
-            outsideCircle = cat(2, outsideCircle, [newestPoint(1);newestPoint(2)]);
+            outsideCircle(numel(outsideCircle)+1) = [newestPoint(1); newestPoi;
             plot(newestPoint(1,1), newestPoint(2,1), 'xb');
         else
-            insideCircle = cat(2, insideCircle, [newestPoint(1);newestPoint(2)]);
+            insideCircle(numel(insideCircle)+1) = newestPoint;
             plot(newestPoint(1,1), newestPoint(2,1), 'xr');
         end
         annotation('textbox', [0,0.1,.3,.3], 'String', ['Pi value: ', string(piVal)], 'FitBoxToText', 'on');
@@ -62,11 +63,14 @@ function monteCarloValue = getMonteCarloPiVal(desiredSigFigs)
     delete(findall(gcf, 'type', 'annotation'));
     annotation('textbox', [0,0.1,.3,.3], 'String', ['Pi value: ', string(piVal)], 'FitBoxToText', 'on');
     annotation('textbox', [0,0,.3,.3], 'String', ['Sample size:  ', string(numel(piValues))], 'FitBoxToText', 'on');
+    plot(insideCircle(1,:), insideCircle(2,:), 'rx');
+    plot(outsideCircle(1,:), outsideCircle(2,:), 'rx');
     drawnow;
-    
+
     fprintf('Pi value with %d significant figure(s): %f \n', desiredSigFigs, piVal);
     fprintf('Number of points required for %d significant figure(s): %d \n', desiredSigFigs, numel(generatedPoints(1,:)));
     monteCarloValue = piVal;
+    hold off
 end
 
 %% Helper functions

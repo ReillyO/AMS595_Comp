@@ -102,10 +102,11 @@ for sigFigs = 1:SIG_FIGS
     
     fprintf('Pi value with %d significant figure(s): %f \n', sigFigs, piVal);
     fprintf('Number of points required for %d significant figure(s): %d \n', sigFigs, numel(generatedPoints(1,:)));
-end
-
+end 
 
 %% Functions
+
+disp("")
 
 % Check if the past 30 pi values have a consistent digit in the desired
 % significant figure place; if they do, the number is assumed to be
