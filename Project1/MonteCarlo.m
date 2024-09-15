@@ -55,7 +55,7 @@ summaryTable = table(transpose(sampleSize), transpose(piValues), transpose(devia
 disp(summaryTable);
 
 % plot figures showing requested statistics
-tiledlayout(1,2);
+tiledlayout(1,3);
 nexttile;
 semilogx(sampleSize, piValues, 'b-o');
 title('Pi Value vs Sample Size');
@@ -67,6 +67,13 @@ semilogx(sampleSize, deviations, 'r-o');
 title('Deviation From True Value vs Sample Size')
 xlabel('log(Sample Size)');
 ylabel('Deviation');
+
+nexttile;
+loglog(sampleSize, times, 'g-o');
+title('Computing Time (s) vs Sample Size');
+xlabel('log(Sample Size)');
+ylabel('log(Computer Time) (s)');
+
 
 %% Section 2: while loop of specified precision
 %
