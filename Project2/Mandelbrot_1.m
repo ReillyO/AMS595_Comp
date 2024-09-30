@@ -1,5 +1,7 @@
 %% Project 2: Mandelbrot Fractal
-
+%
+%% Creation of the set
+POLYNOMIAL_ORDER = 15;
 N = 1000;
 mandelbrotPoints = zeros(N, N);
 displayGrid = zeros(N,N);
@@ -16,32 +18,78 @@ for valX = 1:N
     for valY = 1:N
        iters = fractalIterationsToDivergence(mandelbrotPoints(valY, valX));
        if iters == -1
-           displayGrid(valY, valX) = 200;
+           displayGrid(valY, valX) = 100;
        else
            displayGrid(valY, valX) = iters;
        end
     end
 end
 
+% % Display the Mandelbrot plot using the following:
 % figure;
-% imshow(displayGrid, [0 200], "InitialMagnification", 400);
+% imshow(displayGrid, [0 100], "InitialMagnification", 400);
 
+% % Bughunting
 % s = bisection(indicatorFunctionForCol(-1.1), 0, 1);
 % disp(s);
 
-boundCoords = [numel(x)];
+% Use the bisection function at each x-value to find the y-value that
+% bounds the convergent and divergent complex numbers
+y_boundary = [numel(x)];
 for column = 1:numel(x)
-    boundCoords(column) = bisection(indicatorFunctionForCol(x(column)), 0, 1);
+    y_boundary(column) = bisection(indicatorFunctionForCol(x(column)), 0, 1);
 end
-figure;
-scatter(x, boundCoords, 'or');
 
-%% fractal function
+%% Polynomial Fitting
+
+% First, cut off all the zero values on either side of the point curve
+% (currently amounts to a range of 201-795)
+init = 1;
+termin = 1;
+for i = 1:numel(y_boundary)
+    if y_boundary(i) ~= 0 && init == 1
+        init = i;
+    elseif y_boundary(i) == 0 && init ~= 1 && termin == 1
+        termin = i;
+    end
+end
+disp(termin);
+
+y_boundary = y_boundary(init:termin);
+x_boundary = x(init:termin);
+
+% plot the chart as a sanity check
+figure;
+scatter(x_boundary, y_boundary, 'or');
+
+% Use built-in function to polynomial fit the boundary curve
+p = polyfit(x_boundary, y_boundary, POLYNOMIAL_ORDER);
+
+% Prepare for creation of ds by creating polynomial derivative and set of
+% numbers to use as exponents
+dp = polyder(p);
+exps = 1:POLYNOMIAL_ORDER;
+
+%sanity checks plotting the p and dp 
+hold on
+plot(x_boundary, polyval(p, x_boundary), 'b-');
+% plot(x_boundary, polyval(dp, x_boundary), 'b-');
+
+
+%% Integrating along the curve
+
+% Anonymous function for dp/dx
+ds = @(x) sqrt(1+sum((x .* dp) .^ exps));
+
+a = integral(ds, 0, 1);
+
+%% Helper functions
+
 % will return -1 if c converges and the number of iterations if it
 % diverges
 function iterations = fractalIterationsToDivergence(c)
-    CUTOFF_ITER = 100;
-    FRACTAL_BOUND = 2;
+    CUTOFF_ITER = 100; % maximum number of iterations before declaring convergence
+    FRACTAL_BOUND = 2; % value of the complex number indicating divergence
     iterations = 0;
     z = c;
     while iterations < CUTOFF_ITER && abs(z)^2 < FRACTAL_BOUND
@@ -83,3 +131,5 @@ function m = bisection(fn_f, s, e)
     end
     fprintf('\n=====\nEND\n=====\nfn_f(m): %f\nfn_f(m+1/1000): %f\nm: %f\n', fn_f(m), fn_f(m+1/1000), m);
 end
+
+
