@@ -35,9 +35,9 @@ end
 
 % Use the bisection function at each x-value to find the y-value that
 % bounds the convergent and divergent complex numbers
-y_boundary = [numel(x)];
+yBoundary = [numel(x)];
 for column = 1:numel(x)
-    y_boundary(column) = bisection(indicatorFunctionForCol(x(column)), 0, 1);
+    yBoundary(column) = bisection(indicatorFunctionForCol(x(column)), 0, 1);
 end
 
 %% Polynomial Fitting
@@ -46,42 +46,35 @@ end
 % (currently amounts to a range of 201-795)
 init = 1;
 termin = 1;
-for i = 1:numel(y_boundary)
-    if y_boundary(i) ~= 0 && init == 1
+for i = 1:numel(yBoundary)
+    if yBoundary(i) ~= 0 && init == 1
         init = i;
-    elseif y_boundary(i) == 0 && init ~= 1 && termin == 1
+    elseif yBoundary(i) == 0 && init ~= 1 && termin == 1
         termin = i;
     end
 end
 disp(termin);
 
-y_boundary = y_boundary(init:termin);
-x_boundary = x(init:termin);
+yBoundary = yBoundary(init:termin);
+xBoundary = x(init:termin);
 
 % plot the chart as a sanity check
 figure;
-scatter(x_boundary, y_boundary, 'or');
+scatter(xBoundary, yBoundary, 'xr');
+xlabel('real');
+ylabel('complex');
+title('Mandelbrot Fractal Boundary Polynomial Approximation')
 
 % Use built-in function to polynomial fit the boundary curve
-p = polyfit(x_boundary, y_boundary, POLYNOMIAL_ORDER);
-
-% Prepare for creation of ds by creating polynomial derivative and set of
-% numbers to use as exponents
-dp = polyder(p);
-exps = 1:POLYNOMIAL_ORDER;
-
-%sanity checks plotting the p and dp 
+p = polyfit(xBoundary, yBoundary, POLYNOMIAL_ORDER);
 hold on
-plot(x_boundary, polyval(p, x_boundary), 'b-');
-% plot(x_boundary, polyval(dp, x_boundary), 'b-');
-
+plot(xBoundary, polyval(p, xBoundary), '-b');
 
 %% Integrating along the curve
 
-% Anonymous function for dp/dx
-ds = @(x) sqrt(1+sum((x .* dp) .^ exps));
-
-a = integral(ds, 0, 1);
+fprintf('left: %f\nright: %f\n', xBoundary(1), xBoundary(end));
+mandelbrotLength = polyLen(p, xBoundary(1), xBoundary(end));
+fprintf('Length of Mandelbrot perimeter by polynomial fitting: %f\n', mandelbrotLength);
 
 %% Helper functions
 
@@ -133,3 +126,24 @@ function m = bisection(fn_f, s, e)
 end
 
 
+% Function to determine the length of a polynomial curve p from a left and
+% right bound s and e. Returns a scalar value l representing the length of
+% the curve between the specified bounds.
+
+function l = polyLen(p, s, e)
+    % Prepare for creation of ds by calculating polynomial derivative and set of
+    % numbers to use as exponents
+    dp = polyder(p);
+    % 15 should be changed to polynomial magnitude
+    exps = (15 - 1):-1:0;
+    
+    % %sanity checks plotting the p and dp 
+    % hold on
+    % plot(x_boundary, polyval(p, x_boundary), 'b-');
+    
+    % Anonymous function for dp/dx
+    ds = @(xvalue) sqrt(1+sum((xvalue .^ exps) .* dp)^2);
+    
+    % integration with ArrayValued set to true so the arrays play nice
+    l = integral(ds, s, e, 'ArrayValued', true);
+end

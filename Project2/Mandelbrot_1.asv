@@ -64,22 +64,26 @@ scatter(x_boundary, y_boundary, 'or');
 
 % Use built-in function to polynomial fit the boundary curve
 p = polyfit(x_boundary, y_boundary, POLYNOMIAL_ORDER);
-dp = polyder(p);
-exps = 1:POLYNOMIAL_ORDER;
 
+% Prepare for creation of ds by creating polynomial derivative and set of
+% numbers to use as exponents
+dp = polyder(p);
+exps = (POLYNOMIAL_ORDER-1):-1:0;
+
+%sanity checks plotting the p and dp 
 hold on
 plot(x_boundary, polyval(p, x_boundary), 'b-');
-plot(x_boundary, polyval(pd, x_boundary), 'b-');
+% plot(x_boundary, polyval(dp, x_boundary), 'b-');
 
 
 %% Integrating along the curve
 
-ds = @(x) (sum((x .* dp) .^ exps));
+% Anonymous function for dp/dx
 
-a = ds(0);
+ds = @(xvalue) sqrt(1+sum((xvalue .^ exps) .* dp)^2);
+
+a = integral(ds, x_boundary(1), x_boundary(end), 'ArrayValued', true);
 disp(a);
-
-% a = integral(ds, 0, 1);
 
 %% Helper functions
 
@@ -130,4 +134,8 @@ function m = bisection(fn_f, s, e)
     fprintf('\n=====\nEND\n=====\nfn_f(m): %f\nfn_f(m+1/1000): %f\nm: %f\n', fn_f(m), fn_f(m+1/1000), m);
 end
 
+
+% Function to determine the length of a polynomial curve p from a left and
+% right bound s and e. Returns a scalar value l representing the length of
+% the curve between the specified bounds.
 
