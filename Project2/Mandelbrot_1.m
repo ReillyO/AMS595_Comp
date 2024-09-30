@@ -57,7 +57,6 @@ for i = 1:numel(yBoundary)
         termin = i;
     end
 end
-disp(termin);
 
 % Resize arrays
 yBoundary = yBoundary(init:termin);
@@ -116,8 +115,6 @@ function m = bisection(fn_f, s, e)
     m0 = s;
     mt = 0;
     while fn_f(m) == fn_f(m+1/1000) % not at boundary, 1/N
-        fprintf('function return: %f\n', fractalIterationsToDivergence(1 + 1i * m));
-        fprintf('m: %f\nfn_f(m): %f \nm0: %f\n', m, fn_f(m), m0)
         mt = m;
         if fn_f(m) < 0 % diverges
             m = m + 0.5*(abs(m0 - m));
@@ -129,7 +126,6 @@ function m = bisection(fn_f, s, e)
         end
         m0 = mt;
     end
-    fprintf('\n=====\nEND\n=====\nfn_f(m): %f\nfn_f(m+1/1000): %f\nm: %f\n', fn_f(m), fn_f(m+1/1000), m);
 end
 
 
