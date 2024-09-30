@@ -1,19 +1,25 @@
 %% Project 2: Mandelbrot Fractal
 %
 %% Creation of the set
+% Initialize variables/constants
 POLYNOMIAL_ORDER = 15;
 N = 1000;
-mandelbrotPoints = zeros(N, N);
 displayGrid = zeros(N,N);
 
+% Create arrays for the ranges of real and complex components and a
+% meshgrid of their values
 x = linspace(-2, 1, N);
 y = linspace(-1, 1, N);
 [X, Y] = meshgrid(x, y);
 
+% Compute the complex points in the 1000x1000 meshgrid
 mandelbrotPoints = X + Y * 1i;
 
-% figure will display white pixels if coordinate converges and black/grey pixels
-% if the coordinate diverges
+% For every complex value in the mandelbrotPoints meshgrid, determine
+% whether the complex number converges or diverges using the 
+% fractalIterationsToDivergence function.
+% The function will return either the number of iterations (divergence) 
+% or -1 (convergence), and the values will be stored as such
 for valX = 1:N
     for valY = 1:N
        iters = fractalIterationsToDivergence(mandelbrotPoints(valY, valX));
@@ -29,9 +35,7 @@ end
 % figure;
 % imshow(displayGrid, [0 100], "InitialMagnification", 400);
 
-% % Bughunting
-% s = bisection(indicatorFunctionForCol(-1.1), 0, 1);
-% disp(s);
+%% Determination of the Mandelbrot boundary
 
 % Use the bisection function at each x-value to find the y-value that
 % bounds the convergent and divergent complex numbers
@@ -55,31 +59,33 @@ for i = 1:numel(yBoundary)
 end
 disp(termin);
 
+% Resize arrays
 yBoundary = yBoundary(init:termin);
 xBoundary = x(init:termin);
 
-% plot the chart as a sanity check
+% Plot a chart as a sanity check
 figure;
 scatter(xBoundary, yBoundary, 'xr');
 xlabel('real');
 ylabel('complex');
 title('Mandelbrot Fractal Boundary Polynomial Approximation')
 
-% Use built-in function to polynomial fit the boundary curve
+% Use built-in polyfit function to polynomial fit the boundary curve
 p = polyfit(xBoundary, yBoundary, POLYNOMIAL_ORDER);
 hold on
 plot(xBoundary, polyval(p, xBoundary), '-b');
 
 %% Integrating along the curve
 
-fprintf('left: %f\nright: %f\n', xBoundary(1), xBoundary(end));
+% Use custom polyLen method to calculate the length of the polynomial curve
+% between the specified boundaries, and output the result to the console
 mandelbrotLength = polyLen(p, xBoundary(1), xBoundary(end));
 fprintf('Length of Mandelbrot perimeter by polynomial fitting: %f\n', mandelbrotLength);
 
 %% Helper functions
 
-% will return -1 if c converges and the number of iterations if it
-% diverges
+% Takes single complex number; returns -1 if c converges and the number of 
+% iterations if it diverges
 function iterations = fractalIterationsToDivergence(c)
     CUTOFF_ITER = 100; % maximum number of iterations before declaring convergence
     FRACTAL_BOUND = 2; % value of the complex number indicating divergence
@@ -94,27 +100,28 @@ function iterations = fractalIterationsToDivergence(c)
     end
 end
 
-% Function to define the indicator function for a particular column
-% provided as the input parameter
-% Anonymous function returns -1 if divergent and 1 if convergent
+% Indicator function for a particular column provided as the input parameter
+% Anonymous function returns -1 if complex number formed by the X and Y 
+% values is divergent and 1 if convergent
 function fn = indicatorFunctionForCol(xval)
     fn = @(yval) (fractalIterationsToDivergence(xval + 1i * yval) >= 0) * 2 - 1;
 end
 
+
 % Function that uses a binary search algorithm structure to find the point
 % at which complex values switch from being outside to inside the
-% Mandelbrot set on a particular X-value
+% Mandelbrot set on a particular X-value - SENSITIVE TO N=1000
 function m = bisection(fn_f, s, e)
     m = e;
     m0 = s;
     mt = 0;
-    while fn_f(m) == fn_f(m+1/1000) %not at boundary, 1/N
+    while fn_f(m) == fn_f(m+1/1000) % not at boundary, 1/N
         fprintf('function return: %f\n', fractalIterationsToDivergence(1 + 1i * m));
         fprintf('m: %f\nfn_f(m): %f \nm0: %f\n', m, fn_f(m), m0)
         mt = m;
         if fn_f(m) < 0 % diverges
             m = m + 0.5*(abs(m0 - m));
-        elseif m < 1/1000
+        elseif m < 1/1000 % close enough to 0
             m = 0;
             break;
         else % converges
@@ -129,12 +136,11 @@ end
 % Function to determine the length of a polynomial curve p from a left and
 % right bound s and e. Returns a scalar value l representing the length of
 % the curve between the specified bounds.
-
 function l = polyLen(p, s, e)
     % Prepare for creation of ds by calculating polynomial derivative and set of
     % numbers to use as exponents
     dp = polyder(p);
-    % 15 should be changed to polynomial magnitude
+    % 15 should be changed to POLYNOMIAL_ORDER
     exps = (15 - 1):-1:0;
     
     % %sanity checks plotting the p and dp 

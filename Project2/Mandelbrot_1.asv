@@ -1,19 +1,26 @@
 %% Project 2: Mandelbrot Fractal
 %
 %% Creation of the set
+% Initialize variables/constants
 POLYNOMIAL_ORDER = 15;
 N = 1000;
 mandelbrotPoints = zeros(N, N);
 displayGrid = zeros(N,N);
 
+% Create arrays for the ranges of real and complex components and a
+% meshgrid of their values
 x = linspace(-2, 1, N);
 y = linspace(-1, 1, N);
 [X, Y] = meshgrid(x, y);
 
+% Compute the complex points in the 1000x1000 meshgrid
 mandelbrotPoints = X + Y * 1i;
 
-% figure will display white pixels if coordinate converges and black/grey pixels
-% if the coordinate diverges
+% For every complex value in the mandelbrotPoints meshgrid, determine
+% whether the complex number converges or diverges using the 
+% fractalIterationsToDivergence function.
+% The function will return either the number of iterations (divergence) 
+% or -1 (convergence), and the values will be stored as such
 for valX = 1:N
     for valY = 1:N
        iters = fractalIterationsToDivergence(mandelbrotPoints(valY, valX));
@@ -29,15 +36,13 @@ end
 % figure;
 % imshow(displayGrid, [0 100], "InitialMagnification", 400);
 
-% % Bughunting
-% s = bisection(indicatorFunctionForCol(-1.1), 0, 1);
-% disp(s);
+%% Determination of the Mandelbrot boundary
 
 % Use the bisection function at each x-value to find the y-value that
 % bounds the convergent and divergent complex numbers
-y_boundary = [numel(x)];
+yBoundary = [numel(x)];
 for column = 1:numel(x)
-    y_boundary(column) = bisection(indicatorFunctionForCol(x(column)), 0, 1);
+    yBoundary(column) = bisection(indicatorFunctionForCol(x(column)), 0, 1);
 end
 
 %% Polynomial Fitting
@@ -46,44 +51,37 @@ end
 % (currently amounts to a range of 201-795)
 init = 1;
 termin = 1;
-for i = 1:numel(y_boundary)
-    if y_boundary(i) ~= 0 && init == 1
+for i = 1:numel(yBoundary)
+    if yBoundary(i) ~= 0 && init == 1
         init = i;
-    elseif y_boundary(i) == 0 && init ~= 1 && termin == 1
+    elseif yBoundary(i) == 0 && init ~= 1 && termin == 1
         termin = i;
     end
 end
 disp(termin);
 
-y_boundary = y_boundary(init:termin);
-x_boundary = x(init:termin);
+% Resize arrays
+yBoundary = yBoundary(init:termin);
+xBoundary = x(init:termin);
 
-% plot the chart as a sanity check
+% Plot a chart as a sanity check
 figure;
-scatter(x_boundary, y_boundary, 'or');
+scatter(xBoundary, yBoundary, 'xr');
+xlabel('real');
+ylabel('complex');
+title('Mandelbrot Fractal Boundary Polynomial Approximation')
 
-% Use built-in function to polynomial fit the boundary curve
-p = polyfit(x_boundary, y_boundary, POLYNOMIAL_ORDER);
-
-% Prepare for creation of ds by creating polynomial derivative and set of
-% numbers to use as exponents
-dp = polyder(p);
-exps = (POLYNOMIAL_ORDER-1):-1:0;
-
-%sanity checks plotting the p and dp 
+% Use built-in polyfit function to polynomial fit the boundary curve
+p = polyfit(xBoundary, yBoundary, POLYNOMIAL_ORDER);
 hold on
-plot(x_boundary, polyval(p, x_boundary), 'b-');
-% plot(x_boundary, polyval(dp, x_boundary), 'b-');
-
+plot(xBoundary, polyval(p, xBoundary), '-b');
 
 %% Integrating along the curve
 
-% Anonymous function for dp/dx
-
-ds = @(xvalue) sqrt(1+sum((xvalue .^ exps) .* dp)^2);
-
-a = integral(ds, x_boundary(1), x_boundary(end), 'ArrayValued', true);
-disp(a);
+% Use custom polyLen method to calculate the length of the polynomial curve
+% between the specified boundaruies
+mandelbrotLength = polyLen(p, xBoundary(1), xBoundary(end));
+fprintf('Length of Mandelbrot perimeter by polynomial fitting: %f\n', mandelbrotLength);
 
 %% Helper functions
 
@@ -139,3 +137,20 @@ end
 % right bound s and e. Returns a scalar value l representing the length of
 % the curve between the specified bounds.
 
+function l = polyLen(p, s, e)
+    % Prepare for creation of ds by calculating polynomial derivative and set of
+    % numbers to use as exponents
+    dp = polyder(p);
+    % 15 should be changed to polynomial magnitude
+    exps = (15 - 1):-1:0;
+    
+    % %sanity checks plotting the p and dp 
+    % hold on
+    % plot(x_boundary, polyval(p, x_boundary), 'b-');
+    
+    % Anonymous function for dp/dx
+    ds = @(xvalue) sqrt(1+sum((xvalue .^ exps) .* dp)^2);
+    
+    % integration with ArrayValued set to true so the arrays play nice
+    l = integral(ds, s, e, 'ArrayValued', true);
+end
