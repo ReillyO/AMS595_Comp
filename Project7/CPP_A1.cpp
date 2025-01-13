@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include "CPP_A1.h"
 
 using namespace std;
 
@@ -103,7 +104,6 @@ int main(int argc, char *argv[]) {
 	//-------------------------------------
 	//       Conditional Statement
 	//-------------------------------------
-	int num1;
 	cout << "Enter a number: ";
 	cin >> num1;
 	switch (num1){
@@ -133,8 +133,8 @@ int main(int argc, char *argv[]) {
 	cout << "Fibonacci sequence up to 4,000,000:" << endl;
 	
 	// initial two values
-	int a = 1;
-	int b = 2;
+	a = 1;
+	b = 2;
 	
 	// Leapfrog up through the sequence with the two variables
 	// until a value of 4,000,000 is exceeded
@@ -180,7 +180,6 @@ int main(int argc, char *argv[]) {
 	//-------------------------------------
 	// Generate and print the first ten rows of the triangle
 	cout << endl << "Pascal's Triangle: First 10 Rows" << endl;
-	vector<int> pascal;
 	for (int i = 0; i < 10; i++){
 		pascal = pascalTriangle(i);
 		printVector(pascal);
